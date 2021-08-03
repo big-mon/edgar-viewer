@@ -12,3 +12,9 @@
 | src/components/template/  | organisms を組み合わせた部品                        |
 | src/pages/                | ルーティングされるページ                            |
 | src/styles/               | CSS, SCSS                                           |
+
+## ❤ Special Thanks
+
+### Background Picture
+
+- [Guillaume Meurice](https://www.pexels.com/ja-jp/photo/1894350/)
