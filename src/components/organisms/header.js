@@ -9,7 +9,7 @@ export default function TopHeader() {
     <>
       <Header className={styles.header}>
         <Link href="/">
-          <a>Header</a>
+          <a>Alpha Gazer</a>
         </Link>
       </Header>
     </>

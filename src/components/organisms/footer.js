@@ -8,6 +8,9 @@ export default function TopFooter() {
   return (
     <>
       <Footer className={styles.footer}>
+        <Link href="/">
+          <a>Alpha Gazer</a>
+        </Link>{" "}
         Created by{" "}
         <a
           href="//twitter.com/BIG_MON"
