@@ -9,32 +9,34 @@ export default function TopFooter({ children, home }) {
 
   return (
     <>
-      {home ? (
-        <Footer className={styles.index}>
-          Created by{" "}
-          <a
-            href="//twitter.com/BIG_MON"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Mon
-          </a>
-        </Footer>
-      ) : (
-        <Footer className={styles.footer}>
-          <Link href="/">
-            <a>{name}</a>
-          </Link>{" "}
-          Created by{" "}
-          <a
-            href="//twitter.com/BIG_MON"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Mon
-          </a>
-        </Footer>
-      )}
+      <div className={styles.footerWrapper}>
+        {home ? (
+          <Footer className={styles.index}>
+            Created by{" "}
+            <a
+              href="//twitter.com/BIG_MON"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mon
+            </a>
+          </Footer>
+        ) : (
+          <Footer className={styles.footer}>
+            <Link href="/">
+              <a>{name}</a>
+            </Link>{" "}
+            Created by{" "}
+            <a
+              href="//twitter.com/BIG_MON"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mon
+            </a>
+          </Footer>
+        )}
+      </div>
     </>
   );
 }
