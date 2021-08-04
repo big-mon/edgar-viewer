@@ -1,4 +1,4 @@
-import { Layout, Typography } from "antd";
+import { Layout } from "antd";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "../../styles/header.module.scss";
