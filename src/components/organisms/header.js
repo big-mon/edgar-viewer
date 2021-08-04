@@ -4,7 +4,6 @@ import Link from "next/link";
 import styles from "../../styles/header.module.scss";
 
 const { Header } = Layout;
-const { Paragraph } = Typography;
 
 export default function TopHeader({ children, home }) {
   const name = "Alpha Gazer";

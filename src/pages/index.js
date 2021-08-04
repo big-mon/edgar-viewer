@@ -3,6 +3,7 @@ import TopFooter from "../components/organisms/footer";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import styles from "../styles/index.module.scss";
+import background from "../../public/bg.jpg";
 
 export default function Page() {
   return (
@@ -18,8 +19,9 @@ export default function Page() {
 
       <Image
         className={styles.cover_image}
-        src="/bg.jpg"
+        src={background}
         alt="picture of background"
+        placeholder="blur"
         layout="fill"
         objectFit="cover"
         objectPosition="cover"
