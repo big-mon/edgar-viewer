@@ -4,7 +4,7 @@ import styles from "../../styles/footer.module.scss";
 
 const { Footer } = Layout;
 
-export default function TopFooter({ children, home }) {
+export function TopFooter({ children, home }) {
   const name = "Alpha Gazer";
 
   return (

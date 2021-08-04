@@ -1,5 +1,5 @@
-import TopHeader from "../components/organisms/header";
-import TopFooter from "../components/organisms/footer";
+import { TopHeader } from "../components/organisms/header";
+import { TopFooter } from "../components/organisms/footer";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import styles from "../styles/index.module.scss";

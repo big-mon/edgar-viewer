@@ -5,7 +5,7 @@ import styles from "../../styles/header.module.scss";
 
 const { Header } = Layout;
 
-export default function TopHeader({ children, home }) {
+export function TopHeader({ children, home }) {
   const name = "Alpha Gazer";
 
   return (

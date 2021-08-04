@@ -1,6 +1,6 @@
 import { Layout } from "antd";
-import TopHeader from "../organisms/header";
-import TopFooter from "../organisms/footer";
+import { TopHeader } from "../organisms/header";
+import { TopFooter } from "../organisms/footer";
 import styles from "../../styles/layout.module.scss";
 
 const { Content } = Layout;
