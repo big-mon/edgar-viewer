@@ -8,7 +8,13 @@ import { TickerSearcher } from "../components/organisms/TickerSearcher";
 import useSWR from "swr";
 
 export default function Page() {
-  const { data, error } = useSWR(`/api/tickers`);
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const { data, error } = useSWR(`/api/tickers`, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+    dedupingInterval: 3600000,
+  });
   const tickers = error || !data ? [] : Object.values(data);
 
   return (
