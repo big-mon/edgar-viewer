@@ -6,7 +6,7 @@ import styles from "../styles/index.module.scss";
 import background from "../../public/bg.jpg";
 import { TickerSearcher } from "../components/organisms/TickerSearcher";
 
-export default function Page() {
+export default function Page({ tickers }) {
   return (
     <>
       <div className={styles.cover_content}>
@@ -14,7 +14,7 @@ export default function Page() {
           <Col xs={{ span: 23, offset: 1 }} lg={{ span: 12, offset: 1 }}>
             <TopHeader home />
 
-            <TickerSearcher />
+            <TickerSearcher data={tickers} />
 
             <TopFooter home />
           </Col>
@@ -32,6 +32,18 @@ export default function Page() {
       />
     </>
   );
+}
+
+/** アクセス毎に実行 */
+export async function getServerSideProps(context) {
+  const res = await fetch(`https://www.sec.gov/files/company_tickers.json`);
+  const json = await res.json();
+
+  return {
+    props: {
+      tickers: Object.values(json),
+    },
+  };
 }
 
 // 独自レイアウトを定義
