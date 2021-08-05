@@ -1,6 +1,8 @@
 import React from "react";
 import { SearchInput } from "../molecules/SearchInput";
+import { PrimaryButton } from "../molecules/PrimaryButton";
 import styles from "../../styles/TickerSearcher.module.scss";
+import { SearchOutlined } from "@ant-design/icons";
 
 /** ティッカー検索欄及び検索ボタン */
 export class TickerSearcher extends React.Component {
@@ -25,7 +27,7 @@ export class TickerSearcher extends React.Component {
     return (
       <div className={styles.input}>
         <SearchInput
-          isAutoFocus
+          showArrow={false}
           label="ticker"
           filter="filter"
           data={data}
@@ -33,6 +35,14 @@ export class TickerSearcher extends React.Component {
           optionLabelProp="ticker"
           onChange={this.handleChange.bind(this)}
         />
+
+        <PrimaryButton
+          onValueChange={this.handleChange}
+          disabled={this.state.value === undefined}
+          size="large"
+        >
+          <SearchOutlined />
+        </PrimaryButton>
       </div>
     );
   }

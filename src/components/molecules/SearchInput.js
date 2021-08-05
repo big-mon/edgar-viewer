@@ -34,7 +34,7 @@ export class SearchInput extends React.Component {
         showSearch
         placeholder={this.props.placeholder}
         allowClear={true}
-        autoFocus={this.props.isAutoFocus}
+        showArrow={this.props.showArrow}
         style={this.props.style}
         filterOption={true}
         optionFilterProp={this.props.filter}
