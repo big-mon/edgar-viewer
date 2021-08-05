@@ -4,7 +4,7 @@ import { Row, Col } from "antd";
 import Image from "next/image";
 import styles from "../styles/index.module.scss";
 import background from "../../public/bg.jpg";
-import { TickerSearcher } from "../components/organisms/tickerSearcher";
+import { TickerSearcher } from "../components/organisms/TickerSearcher";
 
 export default function Page() {
   return (

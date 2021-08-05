@@ -1,7 +1,7 @@
 import { Layout } from "antd";
 import Head from "next/head";
 import Link from "next/link";
-import styles from "../../styles/topHeader.module.scss";
+import styles from "../../styles/TopHeader.module.scss";
 
 const { Header } = Layout;
 

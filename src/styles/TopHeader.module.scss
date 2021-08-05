@@ -1,0 +1,28 @@
+.fixed {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+
+  a {
+    color: white;
+    font-weight: bolder;
+    text-transform: uppercase;
+  }
+}
+
+.index {
+  font-family: -apple-system, BlinkMacSystemFont, Robot, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif;
+
+  h1 {
+    margin-bottom: 0;
+    font-size: 2.5em;
+    font-weight: 700;
+    color: white;
+  }
+
+  p {
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

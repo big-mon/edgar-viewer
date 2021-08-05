@@ -1,6 +1,6 @@
 import React from "react";
 import { Select } from "antd";
-import styles from "../../styles/searchInput.module.scss";
+import styles from "../../styles/SearchInput.module.scss";
 const { Option } = Select;
 
 export class SearchInput extends React.Component {
