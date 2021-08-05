@@ -5,6 +5,7 @@ import styles from "../../styles/TopHeader.module.scss";
 
 const { Header } = Layout;
 
+/** 最上位フッター */
 export function TopHeader({ children, home }) {
   const name = "Alpha Gazer";
 

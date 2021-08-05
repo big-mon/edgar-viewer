@@ -2,6 +2,7 @@ import React from "react";
 import { SearchInput } from "../molecules/SearchInput";
 import styles from "../../styles/TickerSearcher.module.scss";
 
+/** ティッカー検索欄及び検索ボタン */
 export class TickerSearcher extends React.Component {
   constructor(props) {
     super(props);

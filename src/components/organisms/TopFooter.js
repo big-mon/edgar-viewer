@@ -4,6 +4,7 @@ import styles from "../../styles/TopFooter.module.scss";
 
 const { Footer } = Layout;
 
+/** 最上位ヘッダー */
 export function TopFooter({ children, home }) {
   const name = "Alpha Gazer";
 

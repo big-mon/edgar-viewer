@@ -3,6 +3,7 @@ import { Select } from "antd";
 import styles from "../../styles/SearchInput.module.scss";
 const { Option } = Select;
 
+/** 検索欄 */
 export class SearchInput extends React.Component {
   constructor(props) {
     super(props);
