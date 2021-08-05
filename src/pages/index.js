@@ -4,6 +4,7 @@ import { Row, Col } from "antd";
 import Image from "next/image";
 import styles from "../styles/index.module.scss";
 import background from "../../public/bg.jpg";
+import { TickerSearcher } from "../components/organisms/tickerSearcher";
 
 export default function Page() {
   return (
@@ -12,6 +13,9 @@ export default function Page() {
         <Row align="middle" className={styles.full_height}>
           <Col xs={{ span: 23, offset: 1 }} lg={{ span: 12, offset: 1 }}>
             <TopHeader home />
+
+            <TickerSearcher />
+
             <TopFooter home />
           </Col>
         </Row>
