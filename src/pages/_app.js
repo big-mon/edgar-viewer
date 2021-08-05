@@ -1,4 +1,4 @@
-import Layout from "../components/templates/layout";
+import Layout from "../components/templates/BaseLayout";
 import "antd/dist/antd.css";
 import "../styles/global.scss";
 

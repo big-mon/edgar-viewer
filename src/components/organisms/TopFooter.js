@@ -1,6 +1,6 @@
 import { Layout } from "antd";
 import Link from "next/link";
-import styles from "../../styles/footer.module.scss";
+import styles from "../../styles/topFooter.module.scss";
 
 const { Footer } = Layout;
 
