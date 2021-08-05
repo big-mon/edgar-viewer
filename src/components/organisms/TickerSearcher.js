@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { SearchInput } from "../molecules/SearchInput";
 import { PrimaryButton } from "../molecules/PrimaryButton";
 import styles from "../../styles/TickerSearcher.module.scss";
@@ -36,13 +37,15 @@ export class TickerSearcher extends React.Component {
           onChange={this.handleChange.bind(this)}
         />
 
-        <PrimaryButton
-          onValueChange={this.handleChange}
-          disabled={this.state.value === undefined}
-          size="large"
-        >
-          <SearchOutlined />
-        </PrimaryButton>
+        <Link href={"/stock/" + this.state.value}>
+          <PrimaryButton
+            onValueChange={this.handleChange}
+            disabled={this.state.value === undefined}
+            size="large"
+          >
+            <SearchOutlined />
+          </PrimaryButton>
+        </Link>
       </div>
     );
   }
