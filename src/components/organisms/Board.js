@@ -198,9 +198,9 @@ const deconstructOriginalFacts = (data) => {
       /** 営業キャッシュフロー */
       Operating: gaap.NetCashProvidedByUsedInOperatingActivities,
       /** 投資キャッシュフロー */
-      Investing: gaap.NetCashProvidedByUsedInOperatingActivities,
+      Investing: gaap.NetCashProvidedByUsedInInvestingActivities,
       /** 財務キャッシュフロー */
-      Financing: gaap.NetCashProvidedByUsedInOperatingActivities,
+      Financing: gaap.NetCashProvidedByUsedInFinancingActivities,
       /** 配当キャッシュフロー支出 */
       Dividends: gaap.PaymentsOfDividends,
       /** 自社株買いキャッシュフロー支出 */
