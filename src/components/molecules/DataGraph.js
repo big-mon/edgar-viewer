@@ -32,6 +32,14 @@ const dataFormatter = (number) => {
 /** グラフのマージン定義 */
 const margin = { top: 50, right: 20, left: 20, bottom: 50 };
 
+/** グラフのカラーパレット定義 */
+const colors = {
+  revenue: "#2B2E4A",
+  opeIncome: "#B83B5E",
+  opeIncome2: "#903749",
+  netIncome: "#878ECD",
+};
+
 /** チャートパターンを生成 */
 const createChartPattern = (type, data) => {
   switch (type) {
@@ -43,24 +51,31 @@ const createChartPattern = (type, data) => {
           <YAxis tickFormatter={dataFormatter} />
           <Tooltip formatter={dataFormatter} />
           <Legend />
-          <Bar dataKey="Revenue" fill="#2B2E4A" />
-          <Bar dataKey="Operating Income" fill="#E84545" />
-          <Bar dataKey="Net Income" fill="#878ECD" />
+          <Bar dataKey="Revenue" fill={colors.revenue} />
+          <Bar dataKey="Operating Income" fill={colors.opeIncome} />
+          <Bar dataKey="Net Income" fill={colors.netIncome} />
         </BarChart>
       );
 
     case "cashflow":
       return (
-        <BarChart data={data.slice(-10)} margin={margin}>
+        <ComposedChart data={data.slice(-10)} margin={margin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="frame" />
           <YAxis tickFormatter={dataFormatter} />
+          <YAxis yAxisId={2} orientation="right" unit="%" />
           <Tooltip formatter={dataFormatter} />
           <Legend />
-          <Bar dataKey="OCF" fill="#E84545" />
-          <Bar dataKey="ICF" fill="#F07B3F" />
-          <Bar dataKey="FCF" fill="#878ECD" />
-        </BarChart>
+          <Bar dataKey="OCF" fill={colors.opeIncome} />
+          <Bar dataKey="FCF" fill={colors.netIncome} />
+          <Line
+            yAxisId={2}
+            dataKey="OCF Margin"
+            type="linear"
+            strokeWidth={3}
+            stroke={colors.opeIncome2}
+          />
+        </ComposedChart>
       );
 
     default:

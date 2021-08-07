@@ -247,27 +247,42 @@ const createRevenueData = (data) => {
 
 /** キャッシュフローデータを生成 */
 const createCashFlowData = (data) => {
+  // 営業CF
   const opeCF = extractDetailData(data.CashFlow.Operating, "OCF");
+  // 投資CF
   const invCF = extractDetailData(data.CashFlow.Investing, "ICF");
+  // CapEX
   const pay01 = extractDetailData(
     data.PaymentsToAcquire.ProductiveAssets,
     "PtA"
   );
   const pay02 = extractDetailData(data.PaymentsToAcquire.PropertyPlant, "PtA");
+  // 売上
+  const revenue = extractDetailData(data.Revenue.Revenue, "Revenue");
+  const revenueOld1 = extractDetailData(data.Revenue.Revenue2016, "Revenue");
+  const revenueOld2 = extractDetailData(data.Revenue.Revenue2015, "Revenue");
 
   // マージ及びソート
   const merged = merge(
     keyBy(opeCF, "frame"),
     keyBy(invCF, "frame"),
     keyBy(pay01, "frame"),
-    keyBy(pay02, "frame")
+    keyBy(pay02, "frame"),
+    keyBy(revenue, "frame"),
+    keyBy(revenueOld1, "frame"),
+    keyBy(revenueOld2, "frame")
   );
   const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
-  // フリーCFを算出
+  // フリーCFと営業CFマージンを算出
   const result = sorted
     .map((d) => ({ ...d, FCF: d["OCF"] - d["PtA"] }))
-    .filter((d) => !isNaN(d.FCF));
+    .filter((d) => !isNaN(d.FCF))
+    .map((d) => ({
+      ...d,
+      "OCF Margin": Math.round((d.OCF / d.Revenue) * 1000) / 10,
+    }));
+  console.log(result);
 
   return result;
 };
