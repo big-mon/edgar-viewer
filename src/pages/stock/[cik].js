@@ -25,13 +25,13 @@ export default function Page() {
   return (
     <>
       {data ? (
-        <Board data={data} />
+        <>
+          <Board data={data} />
+        </>
       ) : (
-        <Skeleton
-          active
-          loading={!data || facts == []}
-          paragraph={{ rows: 20 }}
-        />
+        <>
+          <Skeleton active loading={!data} paragraph={{ rows: 20 }} />
+        </>
       )}
     </>
   );

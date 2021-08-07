@@ -1,26 +1,43 @@
+import React from "react";
 import Head from "next/head";
+import { PageHeader } from "antd";
+import { DataGraph } from "../molecules/DataGraph";
+import merge from "lodash.merge";
+import keyBy from "lodash.keyby";
 
 /** 業績情報ボード */
-export function Board({ data, isQuarter }) {
-  const facts = deconstructOriginalFacts(data);
+export class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
 
-  return (
-    <>
-      <Head>
-        {data && facts != [] ? (
-          <title>{facts.CompanyName ?? ""} - Alpha Gazer</title>
-        ) : (
-          <title>loading... - Alpha Gazer</title>
-        )}
-      </Head>
+  render() {
+    // 元データを整形
+    const facts = deconstructOriginalFacts(this.props.data);
+    const revenues = createRevenueData(facts);
 
-      {JSON.stringify(facts)}
-    </>
-  );
+    return (
+      <>
+        <Head>
+          <title>{facts.CompanyName} | Alpha Gazer</title>
+        </Head>
+
+        <PageHeader
+          onBack={() => window.history.back()}
+          title={facts.CompanyName}
+          style={{ borderBottom: "1px gray solid" }}
+        />
+
+        {/* 業績推移 */}
+        <DataGraph type={"revenue"} data={revenues} />
+      </>
+    );
+  }
 }
 
 /** 当初データから必要なタグのみに切り分けて整理 */
-function deconstructOriginalFacts(data) {
+const deconstructOriginalFacts = (data) => {
   if (data === undefined) return {};
 
   const dei = data.facts.dei;
@@ -39,9 +56,11 @@ function deconstructOriginalFacts(data) {
     },
 
     /** 売上高 */
-    NetSales: {
-      /** 純売上高 */
-      NetSales: gaap.RevenueFromContractWithCustomerExcludingAssessedTax,
+    Revenue: {
+      /** 純売上高(2018-) */
+      Revenue: gaap.RevenueFromContractWithCustomerExcludingAssessedTax,
+      Revenue2016: gaap.Revenues,
+      Revenue2015: gaap.SalesRevenueNet,
       /** 売上原価 */
       COGS: gaap.CostOfGoodsAndServicesSold,
       /** 粗利益 */
@@ -188,4 +207,63 @@ function deconstructOriginalFacts(data) {
       Repurchase: gaap.PaymentsForRepurchaseOfCommonStock,
     },
   };
-}
+};
+
+const createRevenueData = (data) => {
+  // 売上
+  const revenue = extractDetailData(data.Revenue.Revenue, "Revenue");
+  const revenueOld1 = extractDetailData(data.Revenue.Revenue2016, "Revenue");
+  const revenueOld2 = extractDetailData(data.Revenue.Revenue2015, "Revenue");
+  // 粗利益
+  const incomeOpe = extractDetailData(
+    data.Operating.Income,
+    "Operating Income"
+  );
+  // 純利益
+  const income = extractDetailData(data.NetIncome.Final, "Net Income");
+
+  // マージ及びソート
+  const merged = merge(
+    keyBy(revenue, "frame"),
+    keyBy(revenueOld1, "frame"),
+    keyBy(revenueOld2, "frame"),
+    keyBy(incomeOpe, "frame"),
+    keyBy(income, "frame")
+  );
+  const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+  return sorted;
+};
+
+/** 階層をシンプルに整理 */
+const extractDetailData = (data, label) => {
+  const detail = data.units;
+  const units = Object.keys(detail)[0];
+  const lists = detail[units];
+
+  const annual = extractDetailDataForm10k(lists, label);
+
+  return annual;
+};
+
+/** 年次報告を取得 */
+const extractDetailDataForm10k = (data, label) => {
+  // フィルターを作成
+  const frame = new Set(
+    data
+      .filter((d) => d.frame)
+      .filter((d) => d.frame.length === 6)
+      .filter((d) => d.fp === "FY")
+      .map((d) => d.frame)
+  );
+
+  // フィルターを適用
+  const filtered = data
+    .filter((d) => frame.has(d.frame))
+    .map((d) => ({
+      frame: d.frame,
+      sort: d.frame.replace(`CY`, "").replace(`Q`, ""),
+      [label]: d.val,
+    }));
+  return filtered;
+};
