@@ -16,11 +16,13 @@ import {
 
 /** 数値単位のフォーマット */
 const dataFormatter = (number) => {
-  if (number > 1000000000) {
+  const abs = number < 0 ? -number : number;
+
+  if (abs > 1000000000) {
     return (number / 1000000000).toString() + "Bil";
-  } else if (number > 1000000) {
+  } else if (abs > 1000000) {
     return (number / 1000000).toString() + "Mil";
-  } else if (number > 1000) {
+  } else if (abs > 1000) {
     return (number / 1000).toString() + "K";
   } else {
     return number.toString();
@@ -41,9 +43,23 @@ const createChartPattern = (type, data) => {
           <YAxis tickFormatter={dataFormatter} />
           <Tooltip formatter={dataFormatter} />
           <Legend />
-          <Bar dataKey="Revenue" fill="#0d0f36" />
-          <Bar dataKey="Operating Income" fill="#d95b43" />
-          <Bar dataKey="Net Income" fill="#294380" />
+          <Bar dataKey="Revenue" fill="#2B2E4A" />
+          <Bar dataKey="Operating Income" fill="#E84545" />
+          <Bar dataKey="Net Income" fill="#878ECD" />
+        </BarChart>
+      );
+
+    case "cashflow":
+      return (
+        <BarChart data={data.slice(-10)} margin={margin}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="frame" />
+          <YAxis tickFormatter={dataFormatter} />
+          <Tooltip formatter={dataFormatter} />
+          <Legend />
+          <Bar dataKey="OCF" fill="#E84545" />
+          <Bar dataKey="ICF" fill="#F07B3F" />
+          <Bar dataKey="FCF" fill="#878ECD" />
         </BarChart>
       );
 

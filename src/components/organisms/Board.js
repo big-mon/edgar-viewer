@@ -16,6 +16,7 @@ export class Board extends React.Component {
     // 元データを整形
     const facts = deconstructOriginalFacts(this.props.data);
     const revenues = createRevenueData(facts);
+    const cashflow = createCashFlowData(facts);
 
     return (
       <>
@@ -31,6 +32,8 @@ export class Board extends React.Component {
 
         {/* 業績推移 */}
         <DataGraph type={"revenue"} data={revenues} />
+        {/* CF推移 */}
+        <DataGraph type={"cashflow"} data={cashflow} />
       </>
     );
   }
@@ -206,9 +209,16 @@ const deconstructOriginalFacts = (data) => {
       /** 自社株買いキャッシュフロー支出 */
       Repurchase: gaap.PaymentsForRepurchaseOfCommonStock,
     },
+
+    /** 減価償却 */
+    PaymentsToAcquire: {
+      ProductiveAssets: gaap.PaymentsToAcquireProductiveAssets,
+      PropertyPlant: gaap.PaymentsToAcquirePropertyPlantAndEquipment,
+    },
   };
 };
 
+/** 業績データを生成 */
 const createRevenueData = (data) => {
   // 売上
   const revenue = extractDetailData(data.Revenue.Revenue, "Revenue");
@@ -235,8 +245,37 @@ const createRevenueData = (data) => {
   return sorted;
 };
 
+/** キャッシュフローデータを生成 */
+const createCashFlowData = (data) => {
+  const opeCF = extractDetailData(data.CashFlow.Operating, "OCF");
+  const invCF = extractDetailData(data.CashFlow.Investing, "ICF");
+  const pay01 = extractDetailData(
+    data.PaymentsToAcquire.ProductiveAssets,
+    "PtA"
+  );
+  const pay02 = extractDetailData(data.PaymentsToAcquire.PropertyPlant, "PtA");
+
+  // マージ及びソート
+  const merged = merge(
+    keyBy(opeCF, "frame"),
+    keyBy(invCF, "frame"),
+    keyBy(pay01, "frame"),
+    keyBy(pay02, "frame")
+  );
+  const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+  // フリーCFを算出
+  const result = sorted
+    .map((d) => ({ ...d, FCF: d["OCF"] - d["PtA"] }))
+    .filter((d) => !isNaN(d.FCF));
+
+  return result;
+};
+
 /** 階層をシンプルに整理 */
 const extractDetailData = (data, label) => {
+  if (data === undefined) return [];
+
   const detail = data.units;
   const units = Object.keys(detail)[0];
   const lists = detail[units];
