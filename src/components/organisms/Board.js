@@ -224,7 +224,7 @@ const createRevenueData = (data) => {
   const revenue = extractDetailData(data.Revenue.Revenue, "Revenue");
   const revenueOld1 = extractDetailData(data.Revenue.Revenue2016, "Revenue");
   const revenueOld2 = extractDetailData(data.Revenue.Revenue2015, "Revenue");
-  // 粗利益
+  // 営業利益
   const incomeOpe = extractDetailData(
     data.Operating.Income,
     "Operating Income"
@@ -242,7 +242,15 @@ const createRevenueData = (data) => {
   );
   const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
-  return sorted;
+  // 粗利益率を算出
+  const result = sorted.map((d) => ({
+    ...d,
+    "Operating Profit Margin":
+      Math.round((d["Operating Income"] / d.Revenue) * 1000) / 10,
+  }));
+  console.log(result);
+
+  return result;
 };
 
 /** キャッシュフローデータを生成 */
@@ -282,7 +290,6 @@ const createCashFlowData = (data) => {
       ...d,
       "OCF Margin": Math.round((d.OCF / d.Revenue) * 1000) / 10,
     }));
-  console.log(result);
 
   return result;
 };

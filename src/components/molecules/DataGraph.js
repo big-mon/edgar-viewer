@@ -34,7 +34,7 @@ const margin = { top: 50, right: 20, left: 20, bottom: 50 };
 
 /** グラフのカラーパレット定義 */
 const colors = {
-  revenue: "#2B2E4A",
+  revenue: "#001E6C",
   opeIncome: "#B83B5E",
   opeIncome2: "#903749",
   netIncome: "#878ECD",
@@ -45,16 +45,24 @@ const createChartPattern = (type, data) => {
   switch (type) {
     case "revenue":
       return (
-        <BarChart data={data.slice(-10)} margin={margin}>
+        <ComposedChart data={data.slice(-10)} margin={margin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="frame" />
           <YAxis tickFormatter={dataFormatter} />
+          <YAxis yAxisId={2} orientation="right" unit="%" />
           <Tooltip formatter={dataFormatter} />
           <Legend />
           <Bar dataKey="Revenue" fill={colors.revenue} />
           <Bar dataKey="Operating Income" fill={colors.opeIncome} />
           <Bar dataKey="Net Income" fill={colors.netIncome} />
-        </BarChart>
+          <Line
+            yAxisId={2}
+            dataKey="Operating Profit Margin"
+            type="linear"
+            strokeWidth={2}
+            stroke={colors.opeIncome2}
+          />
+        </ComposedChart>
       );
 
     case "cashflow":
