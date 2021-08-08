@@ -2,6 +2,7 @@ import useSWR from "swr";
 import { useRouter } from "next/dist/client/router";
 import { Board } from "../../components/organisms/Board";
 import { Skeleton } from "antd";
+import { fetcher } from "../../utils/fetcher";
 
 /** 0埋め、右から切り取り */
 function zeroPadding(num, length) {
@@ -14,8 +15,8 @@ export default function Page() {
   const padCik = zeroPadding(cik, 10);
 
   // APIからデータを取得
-  const fetcher = async (url) => await fetch(url).then((res) => res.json());
-  const { data, error } = useSWR(`/api/companyfacts?cik=${padCik}`, fetcher, {
+  const url = `/api/companyfacts?cik=${padCik}`;
+  const { data, error } = useSWR(url, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     shouldRetryOnError: false,

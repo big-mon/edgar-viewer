@@ -1,5 +1,5 @@
 import fetch from "isomorphic-unfetch";
-import randomUseragent from "random-useragent";
+import { fetcher } from "../../utils/fetcher";
 
 const API_ROOT = `https://data.sec.gov/api/xbrl/companyfacts/`;
 
@@ -7,9 +7,7 @@ const API_ROOT = `https://data.sec.gov/api/xbrl/companyfacts/`;
 export default async function companyfacts(req, res) {
   const { cik } = req.query;
   const url = `${API_ROOT}CIK${cik}.json`;
-  const fetched = await fetch(url, {
-    headers: { "User-Agent": randomUseragent.getRandom() },
-  });
+  const fetched = await fetch(url, fetcher);
   const json = await fetched.json();
 
   res.status(200).json(json);

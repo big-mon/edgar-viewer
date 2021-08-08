@@ -1,5 +1,7 @@
 import React from "react";
+import { Card } from "antd";
 import {
+  CartesianGridProps,
   ComposedChart,
   BarChart,
   Bar,
@@ -30,7 +32,7 @@ const dataFormatter = (number) => {
 };
 
 /** グラフのマージン定義 */
-const margin = { top: 50, right: 20, left: 20, bottom: 50 };
+const margin = { top: 20, right: 20, left: 20, bottom: 20 };
 
 /** グラフのカラーパレット定義 */
 const colors = {
@@ -51,7 +53,7 @@ const createChartPattern = (type, data) => {
           <YAxis tickFormatter={dataFormatter} />
           <YAxis yAxisId={2} orientation="right" unit="%" />
           <Tooltip formatter={dataFormatter} />
-          <Legend />
+          <Legend verticalAlign="top" height={40} />
           <Bar dataKey="Revenue" fill={colors.revenue} />
           <Bar dataKey="Operating Income" fill={colors.opeIncome} />
           <Bar dataKey="Net Income" fill={colors.netIncome} />
@@ -61,6 +63,7 @@ const createChartPattern = (type, data) => {
             type="linear"
             strokeWidth={2}
             stroke={colors.opeIncome2}
+            unit="%"
           />
         </ComposedChart>
       );
@@ -73,7 +76,7 @@ const createChartPattern = (type, data) => {
           <YAxis tickFormatter={dataFormatter} />
           <YAxis yAxisId={2} orientation="right" unit="%" />
           <Tooltip formatter={dataFormatter} />
-          <Legend />
+          <Legend verticalAlign="top" height={40} />
           <Bar dataKey="OCF" fill={colors.opeIncome} />
           <Bar dataKey="FCF" fill={colors.netIncome} />
           <Line
@@ -82,6 +85,7 @@ const createChartPattern = (type, data) => {
             type="linear"
             strokeWidth={3}
             stroke={colors.opeIncome2}
+            unit="%"
           />
         </ComposedChart>
       );
@@ -115,9 +119,11 @@ export class DataGraph extends React.Component {
     const chart = createChartPattern(this.props.type, this.props.data);
 
     return (
-      <ResponsiveContainer width={"100%"} height={400}>
-        {chart}
-      </ResponsiveContainer>
+      <Card title={this.props.title} style={{ marginBottom: "2rem" }}>
+        <ResponsiveContainer width={"100%"} height={400}>
+          {chart}
+        </ResponsiveContainer>
+      </Card>
     );
   }
 }

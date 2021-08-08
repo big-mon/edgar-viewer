@@ -5,7 +5,7 @@ import { DataGraph } from "../molecules/DataGraph";
 import merge from "lodash.merge";
 import keyBy from "lodash.keyby";
 
-/** 業績情報ボード */
+/** 情報ボード */
 export class Board extends React.Component {
   constructor(props) {
     super(props);
@@ -27,13 +27,15 @@ export class Board extends React.Component {
         <PageHeader
           onBack={() => window.history.back()}
           title={facts.CompanyName}
-          style={{ borderBottom: "1px gray solid" }}
+          style={{ borderBottom: "1px gray solid", marginBottom: "3rem" }}
         />
 
-        {/* 業績推移 */}
-        <DataGraph type={"revenue"} data={revenues} />
-        {/* CF推移 */}
-        <DataGraph type={"cashflow"} data={cashflow} />
+        <DataGraph title="業績の推移" type={"revenue"} data={revenues} />
+        <DataGraph
+          title="キャッシュフローの推移"
+          type={"cashflow"}
+          data={cashflow}
+        />
       </>
     );
   }
@@ -248,7 +250,6 @@ const createRevenueData = (data) => {
     "Operating Profit Margin":
       Math.round((d["Operating Income"] / d.Revenue) * 1000) / 10,
   }));
-  console.log(result);
 
   return result;
 };
@@ -290,6 +291,7 @@ const createCashFlowData = (data) => {
       ...d,
       "OCF Margin": Math.round((d.OCF / d.Revenue) * 1000) / 10,
     }));
+  console.log(result);
 
   return result;
 };
