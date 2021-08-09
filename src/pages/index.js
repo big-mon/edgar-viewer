@@ -45,4 +45,6 @@ export default function Page() {
 }
 
 // 独自レイアウトを定義
-Page.getLayout = (page) => <>{page}</>;
+Page.getLayout = function indexLayout(page) {
+  return <>{page}</>;
+};
