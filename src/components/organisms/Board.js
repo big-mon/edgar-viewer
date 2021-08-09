@@ -47,6 +47,7 @@ const deconstructOriginalFacts = (data) => {
 
   const dei = data.facts?.dei ?? {};
   const gaap = data.facts["us-gaap"] ?? {};
+  if (!Object.keys(dei).length || !Object.keys(gaap).length) return {};
 
   return {
     /** 会社名 */
