@@ -6,7 +6,8 @@
     "dev": "next dev",
     "debug": "cross-env NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
@@ -22,6 +23,8 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "eslint": "^7.32.0",
+    "eslint-config-next": "^11.0.1",
     "sass": "^1.37.2"
   }
 }

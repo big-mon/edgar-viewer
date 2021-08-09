@@ -37,7 +37,7 @@ export class TickerSearcher extends React.Component {
           onChange={this.handleChange.bind(this)}
         />
 
-        <Link href={"/stock/" + this.state.value}>
+        <Link href={"/stock/" + this.state.value} passHref>
           <PrimaryButton
             onValueChange={this.handleChange}
             disabled={this.state.value === undefined}
