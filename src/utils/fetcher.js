@@ -1,15 +1,14 @@
-import randomUseragent from "random-useragent";
-
 export function fetcher(url) {
   return fetch(url, {
     headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers":
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-      "Access-Control-Allow-Methods": "PUT, POST, PATCH, DELETE, GET",
-      "User-Agent": randomUseragent.getRandom(),
+      Accept: "application/json",
+      "Content-Type": "application/json;charset=UTF-8",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36",
     },
     mode: "cors",
-  }).then((response) => response.json());
+  }).then((response) => {
+    if (!response.ok) return response.text();
+    response.json();
+  });
 }
