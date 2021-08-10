@@ -7,18 +7,3 @@
   min-height: 100vh;
   background: rgba(0, 0, 0, 0.3);
 }
-
-.cover_image {
-  z-index: 1;
-  animation: hero 20s ease-in-out infinite alternate;
-
-  @keyframes hero {
-    0% {
-      transform: translateX(0) scale(1.2, 1.2);
-    }
-
-    100% {
-      transform: translateX(-10%) scale(1.2, 1.2);
-    }
-  }
-}

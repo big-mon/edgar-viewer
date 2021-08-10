@@ -1,14 +1,13 @@
 import { TopHeader } from "../components/organisms/TopHeader";
 import { TopFooter } from "../components/organisms/TopFooter";
 import { Row, Col } from "antd";
-import Image from "next/image";
 import styles from "../styles/index.module.scss";
-import background from "../../public/bg.jpg";
 import { TickerSearcher } from "../components/organisms/TickerSearcher";
 import useSWR from "swr";
+import { fetcher } from "../utils/fetcher";
+import { BackgroundImage } from "../components/atoms/BackgeoundImage";
 
 export default function Page() {
-  const fetcher = (url) => fetch(url).then((res) => res.json());
   const { data, error } = useSWR(`/api/tickers`, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -31,15 +30,7 @@ export default function Page() {
         </Row>
       </div>
 
-      <Image
-        className={styles.cover_image}
-        src={background}
-        alt="picture of background"
-        placeholder="blur"
-        layout="fill"
-        objectFit="cover"
-        objectPosition="cover"
-      />
+      <BackgroundImage />
     </>
   );
 }
