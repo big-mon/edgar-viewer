@@ -6,7 +6,7 @@ const API_ROOT = `https://data.sec.gov/api/xbrl/companyfacts/`;
 /** EDGARから決算内容を取得 */
 export default async function companyfacts(req, res) {
   const { cik } = req.query;
-  if (cik === undefined) res.status(400).json({});
+  if (cik === undefined) return res.status(400).json({});
 
   //const url = `${API_ROOT}CIK${cik}.json`;
   const url = `https://companyfacts.damonge.workers.dev/?cik=${cik}`;
@@ -18,5 +18,5 @@ export default async function companyfacts(req, res) {
   const fetched = await fetch(url, fetcher);
   const json = await fetched.json();
 
-  res.status(200).json(json);
+  return res.status(200).json(json);
 }
