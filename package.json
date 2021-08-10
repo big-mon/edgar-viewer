@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "@sentry/nextjs": "^6.11.0",
     "antd": "^4.16.10",
     "isomorphic-unfetch": "^3.1.0",
     "lodash.keyby": "^4.6.0",

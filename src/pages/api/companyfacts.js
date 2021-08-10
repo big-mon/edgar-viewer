@@ -1,10 +1,11 @@
+import { withSentry } from "@sentry/nextjs";
 import fetch from "isomorphic-unfetch";
 import { fetcher } from "../../utils/fetcher";
 
 const API_ROOT = `https://data.sec.gov/api/xbrl/companyfacts/`;
 
 /** EDGARから決算内容を取得 */
-export default async function companyfacts(req, res) {
+const handler = async (req, res) => {
   const { cik } = req.query;
   if (cik === undefined) return res.status(400).json({});
 
@@ -25,4 +26,6 @@ export default async function companyfacts(req, res) {
     console.log("Error:", text);
     return res.status(400).json({});
   }
-}
+};
+
+export default withSentry(handler);
