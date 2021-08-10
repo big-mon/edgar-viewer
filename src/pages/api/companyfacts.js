@@ -6,7 +6,15 @@ const API_ROOT = `https://data.sec.gov/api/xbrl/companyfacts/`;
 /** EDGARから決算内容を取得 */
 export default async function companyfacts(req, res) {
   const { cik } = req.query;
-  const url = `${API_ROOT}CIK${cik}.json`;
+  if (cik === undefined) res.status(400).json({});
+
+  //const url = `${API_ROOT}CIK${cik}.json`;
+  const url = `https://companyfacts.damonge.workers.dev/?cik=${cik}`;
+  //const url = `https://pastebin.pl/view/raw/6a3b2cd2`; // AAPL
+  //const url = `https://pastebin.pl/view/raw/af95e8f3`; // AMZN
+  //const url = `https://pastebin.pl/view/raw/1702175c`; // GOOG
+  //const url = `https://pastebin.pl/view/raw/02fb93ac`; // GD
+
   const fetched = await fetch(url, fetcher);
   const json = await fetched.json();
 

@@ -20,8 +20,9 @@ function Content() {
 
   // データを取得
   const { data, isLoading } = useStock(cik);
-  if (isLoading)
+  if (isLoading || data === undefined)
     return <Skeleton active loading={true} paragraph={{ rows: 20 }} />;
+
   return <Board data={data} />;
 }
 
