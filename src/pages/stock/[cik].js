@@ -39,7 +39,7 @@ function useStock(cik) {
   const { data, error } = useSWR(cik ? url : null, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    shouldRetryOnError: false,
+    errorRetryCount: 2,
     dedupingInterval: 3600000,
   });
 

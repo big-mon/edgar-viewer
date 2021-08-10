@@ -12,7 +12,7 @@ export default function Page() {
   const { data, error } = useSWR(`/api/tickers`, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    shouldRetryOnError: false,
+    errorRetryCount: 2,
     dedupingInterval: 3600000,
   });
   const tickers = error || !data ? [] : Object.values(data);
