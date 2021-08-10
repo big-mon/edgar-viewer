@@ -40,7 +40,7 @@ function useStock(cik) {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     shouldRetryOnError: false,
-    dedupingInterval: 5000,
+    dedupingInterval: 3600000,
   });
 
   return {
