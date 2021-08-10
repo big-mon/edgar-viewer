@@ -2,8 +2,8 @@ export const fetcher = (url) =>
   fetch(url, {
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
-      "User-Agent": "estrilda@damonge.com",
+      "User-Agent": "alpha-gazer@damonge.com",
       "Accept-Encoding": "gzip, deflate",
-      Host: "damonge.com",
+      Host: "www.sec.gov",
     },
   }).then((res) => res.json());
