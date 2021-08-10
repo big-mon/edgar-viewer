@@ -16,7 +16,13 @@ export default async function companyfacts(req, res) {
   //const url = `https://pastebin.pl/view/raw/02fb93ac`; // GD
 
   const fetched = await fetch(url, fetcher);
-  const json = await fetched.json();
+  const text = await fetched.text();
 
-  return res.status(200).json(json);
+  try {
+    const json = JSON.parse(text);
+    return res.status(200).json(json);
+  } catch (e) {
+    console.log("Error:", text);
+    return res.status(400).json({});
+  }
 }
