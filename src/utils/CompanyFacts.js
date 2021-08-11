@@ -377,10 +377,6 @@ export class CompanyFacts {
     const ocfMargin = data.OCFMargin;
     const icf = data.ICF;
     const fcf = data.FCF;
-    console.log(ocf);
-    console.log(ocfMargin);
-    console.log(icf);
-    console.log(fcf);
 
     // マージ及びソート
     const merged = merge(
@@ -411,14 +407,13 @@ export class CompanyFacts {
       true
     );
     const fixDividends = this.fixSplitShares(dividends, split, `Dividends`);
-    console.log(split, fixShares);
 
     // EPS
     // CFPS
     // SPS
   };
 
-  /** 階層をシンプルに整理 */
+  /** 指定要素を抽出(1株辺りの考慮不要) */
   extract = (data, label) => {
     if (data === undefined || !Object.keys(data).length) return [];
 
@@ -426,9 +421,9 @@ export class CompanyFacts {
     const units = Object.keys(detail)[0];
     const lists = detail[units];
 
-    const annual = this.extractForm10k(lists, label);
+    const extracted = this.extractForm10k(lists, label);
 
-    return annual;
+    return extracted;
   };
 
   /** 年次報告を取得 */
