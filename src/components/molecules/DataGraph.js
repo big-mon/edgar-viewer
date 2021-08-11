@@ -44,10 +44,13 @@ const colors = {
 
 /** チャートパターンを生成 */
 const createChartPattern = (type, data) => {
+  const chartData = data.slice(-10);
+
   switch (type) {
     case "revenue":
+      // 業績の推移
       return (
-        <ComposedChart data={data.slice(-10)} margin={margin}>
+        <ComposedChart data={chartData} margin={margin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="frame" />
           <YAxis tickFormatter={dataFormatter} />
@@ -69,8 +72,9 @@ const createChartPattern = (type, data) => {
       );
 
     case "cashflow":
+      // キャッシュフローの推移
       return (
-        <ComposedChart data={data.slice(-10)} margin={margin}>
+        <ComposedChart data={chartData} margin={margin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="frame" />
           <YAxis tickFormatter={dataFormatter} />
@@ -92,7 +96,7 @@ const createChartPattern = (type, data) => {
 
     default:
       return (
-        <ComposedChart data={data} margin={margin}>
+        <ComposedChart data={chartData} margin={margin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="frame" />
           <YAxis yAxisId={1} tickFormatter={dataFormatter} />
