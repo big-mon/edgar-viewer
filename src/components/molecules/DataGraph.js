@@ -94,6 +94,9 @@ const createChartPattern = (type, data) => {
         </ComposedChart>
       );
 
+    case "pershare":
+    // 1株辺りの業績推移
+
     default:
       return (
         <ComposedChart data={chartData} margin={margin}>

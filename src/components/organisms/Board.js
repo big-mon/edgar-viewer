@@ -17,6 +17,7 @@ export class Board extends React.Component {
     const facts = deconstructOriginalFacts(data);
     const revenues = createRevenueData(facts);
     const cashflow = createCashFlowData(facts);
+    const perShare = createPerSahareData(facts);
 
     return (
       <>
@@ -55,10 +56,10 @@ const deconstructOriginalFacts = (data) => {
 
     /** 株式 */
     Shares: {
-      /** 発行済み株式数 */
-      Total: dei.EntityCommonStockSharesOutstanding ?? {},
-      /** 浮動株式の時価総額 */
-      FloatValue: dei.EntityPublicFloat ?? {},
+      /** 希薄化後の発行株式数(加重平均) */
+      DilutedShares: gaap.WeightedAverageNumberOfDilutedSharesOutstanding ?? {},
+      /** 株式分割比率 */
+      Split: gaap.StockholdersEquityNoteStockSplitConversionRatio1 ?? {},
     },
 
     /** 売上高 */
@@ -196,6 +197,8 @@ const deconstructOriginalFacts = (data) => {
     Dividends: {
       /** 配当 */
       Dividends: gaap.Dividends ?? {},
+      /** 1株辺り配当 */
+      DividendsPerShare: gaap.CommonStockDividendsPerShareDeclared ?? {},
       /** 自社株買い */
       Repurchased: gaap.StockRepurchasedAndRetiredDuringPeriodValue ?? {},
     },
@@ -297,6 +300,30 @@ const createCashFlowData = (data) => {
   return result;
 };
 
+/** 1株辺りの業績データを生成 */
+const createPerSahareData = (data) => {
+  // 株式分割比率
+  const split = extractDetailData(data.Shares.Split, `SplitRatio`, true);
+
+  // 発行株式数
+  const shares = extractDetailData(data.Shares.DilutedShares, `Shares`, true);
+  // 発行株式数を補正
+  const fixShares = fixSplitShares(shares, split, `Shares`);
+
+  // dividend per share
+  const dividends = extractDetailData(
+    data.Dividends.DividendsPerShare,
+    `Dividends`,
+    true
+  );
+  const fixDividends = fixSplitShares(dividends, split, `Dividends`);
+  console.log(split, fixShares);
+
+  // EPS
+  // CFPS
+  // SPS
+};
+
 /** 階層をシンプルに整理 */
 const extractDetailData = (data, label) => {
   if (data === undefined || !Object.keys(data).length) return [];
@@ -330,4 +357,45 @@ const extractDetailDataForm10k = (data, label) => {
       [label]: d.val,
     }));
   return filtered;
+};
+
+/** 非年次報告を取得 */
+const extractDetailDataOptional = (data, label) => {
+  // フィルターを作成
+  const frame = new Set(data.filter((d) => d.frame).map((d) => d.frame));
+
+  // フィルターを適用
+  const filtered = data
+    .filter((d) => frame.has(d.frame))
+    .map((d) => ({
+      frame: d.frame,
+      original: d.val,
+      sort: d.end,
+      [label]: d.val,
+    }));
+
+  return filtered;
+};
+
+/** 対象データを分割比率で補正 */
+const fixSplitShares = (target, split, label) => {
+  let edited = target;
+
+  split
+    .slice()
+    .reverse()
+    .forEach((timing) => {
+      const frame = timing.sort;
+      const ratio = timing.SplitRatio;
+      console.log(frame);
+
+      edited = edited.map((d) => ({
+        frame: d.frame,
+        original: d.original,
+        sort: d.sort,
+        [label]: d.sort <= frame ? d[label] * ratio : d[label],
+      }));
+    });
+
+  return edited;
 };
