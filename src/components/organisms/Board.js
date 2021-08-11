@@ -14,7 +14,7 @@ export class Board extends React.Component {
   render() {
     const model = new CompanyFacts(this.props.data ?? {});
     const facts = model.baseData;
-    const revenues = model.createRevenueData(facts);
+    const revenues = model.loadChartDataRevenue();
     const cashflow = model.createCashFlowData(facts);
     const perShare = model.createPerSahareData(facts);
 

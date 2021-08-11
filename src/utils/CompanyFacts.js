@@ -5,15 +5,15 @@ import keyBy from "lodash.keyby";
 export class CompanyFacts {
   constructor(data) {
     this.baseData = this.deconstructOriginalFacts(data);
+    this.data = this.cleanUp();
   }
 
-  /** 当初データから必要なタグのみに切り分けて整理 */
+  /** API結果から必要なタグのみ抽出 */
   deconstructOriginalFacts = (data) => {
     if (data === undefined) return {};
 
-    const dei = data.facts?.dei ?? {};
     const gaap = data.facts["us-gaap"] ?? {};
-    if (!Object.keys(dei).length || !Object.keys(gaap).length) return {};
+    if (!Object.keys(gaap).length) return {};
 
     return {
       /** 会社名 */
@@ -191,71 +191,117 @@ export class CompanyFacts {
     };
   };
 
-  /** 業績データを生成 */
-  createRevenueData = (data) => {
-    // 売上
-    const revenue = this.extractDetailData(data.Revenue.Revenue, "Revenue");
-    const revenueOld1 = this.extractDetailData(
-      data.Revenue.Revenue2016,
-      "Revenue"
-    );
-    const revenueOld2 = this.extractDetailData(
-      data.Revenue.Revenue2015,
-      "Revenue"
-    );
+  /** データ構造を整形 */
+  cleanUp = () => {
+    const data = this.baseData;
+
+    // 企業名
+    const name = data.CompanyName;
+
+    // 売上高
+    const revenue = this.extractRevenue();
     // 営業利益
-    const incomeOpe = this.extractDetailData(
+    const operatingIncome = this.extract(
       data.Operating.Income,
       "Operating Income"
     );
     // 純利益
-    const income = this.extractDetailData(data.NetIncome.Final, "Net Income");
+    const income = this.extract(data.NetIncome.Final, "Net Income");
+    // 営業利益率
+    const operatingMargin = this.calOperatingMargin(revenue, operatingIncome);
+
+    return {
+      /** 企業名 */
+      CompanyName: name,
+      /** 売上高 */
+      Revenue: revenue,
+      /** 営業利益 */
+      OperatingIncome: operatingIncome,
+      /** 営業利益率 */
+      OperatingProfitMargin: operatingMargin,
+      /** 純利益 */
+      NetIncome: income,
+    };
+  };
+
+  /** 売上高の抽出 */
+  extractRevenue = () => {
+    const data = this.baseData.Revenue;
+    const label = `Revenue`;
+    const key = `frame`;
+
+    const revenue = this.extract(data.Revenue, label);
+    const revenueOld1 = this.extract(data.Revenue2016, label);
+    const revenueOld2 = this.extract(data.Revenue2015, label);
 
     // マージ及びソート
     const merged = merge(
-      keyBy(revenue, "frame"),
-      keyBy(revenueOld1, "frame"),
-      keyBy(revenueOld2, "frame"),
-      keyBy(incomeOpe, "frame"),
-      keyBy(income, "frame")
+      keyBy(revenue, key),
+      keyBy(revenueOld1, key),
+      keyBy(revenueOld2, key)
     );
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
-    // 粗利益率を算出
+    return sorted;
+  };
+
+  /** 営業利益率を算出 */
+  calOperatingMargin = (revenue, operatingIncome) => {
+    const mergeKey = `frame`;
+    const key = `Operating Income`;
+
+    // マージ及びソート
+    const merged = merge(
+      keyBy(revenue, mergeKey),
+      keyBy(operatingIncome, mergeKey)
+    );
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 利益率を算出
     const result = sorted.map((d) => ({
-      ...d,
-      "Operating Profit Margin":
-        Math.round((d["Operating Income"] / d.Revenue) * 1000) / 10,
+      frame: d.frame,
+      "Operating Profit Margin": Math.round((d[key] / d.Revenue) * 1000) / 10,
     }));
 
     return result;
   };
 
+  /** 業績データを生成 */
+  loadChartDataRevenue = () => {
+    const data = this.data;
+    const mergeKey = `frame`;
+
+    const revenue = data.Revenue;
+    const operatingIncome = data.OperatingIncome;
+    const operatingProfitMargin = data.OperatingProfitMargin;
+    const netIncome = data.NetIncome;
+
+    // マージ及びソート
+    const merged = merge(
+      keyBy(revenue, mergeKey),
+      keyBy(operatingIncome, mergeKey),
+      keyBy(operatingProfitMargin, mergeKey),
+      keyBy(netIncome, mergeKey)
+    );
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+    console.log(sorted);
+
+    return sorted;
+  };
+
   /** キャッシュフローデータを生成 */
   createCashFlowData = (data) => {
     // 営業CF
-    const opeCF = this.extractDetailData(data.CashFlow.Operating, "OCF");
+    const opeCF = this.extract(data.CashFlow.Operating, "OCF");
     // 投資CF
-    const invCF = this.extractDetailData(data.CashFlow.Investing, "ICF");
+    const invCF = this.extract(data.CashFlow.Investing, "ICF");
     // CapEX
-    const pay01 = this.extractDetailData(
-      data.PaymentsToAcquire.ProductiveAssets,
-      "PtA"
-    );
-    const pay02 = this.extractDetailData(
-      data.PaymentsToAcquire.PropertyPlant,
-      "PtA"
-    );
+    const pay01 = this.extract(data.PaymentsToAcquire.ProductiveAssets, "PtA");
+    const pay02 = this.extract(data.PaymentsToAcquire.PropertyPlant, "PtA");
     // 売上
-    const revenue = this.extractDetailData(data.Revenue.Revenue, "Revenue");
-    const revenueOld1 = this.extractDetailData(
-      data.Revenue.Revenue2016,
-      "Revenue"
-    );
-    const revenueOld2 = this.extractDetailData(
-      data.Revenue.Revenue2015,
-      "Revenue"
-    );
+    const revenue = this.extract(data.Revenue.Revenue, "Revenue");
+    const revenueOld1 = this.extract(data.Revenue.Revenue2016, "Revenue");
+    const revenueOld2 = this.extract(data.Revenue.Revenue2015, "Revenue");
 
     // マージ及びソート
     const merged = merge(
@@ -284,19 +330,15 @@ export class CompanyFacts {
   /** 1株辺りの業績データを生成 */
   createPerSahareData = (data) => {
     // 株式分割比率
-    const split = this.extractDetailData(data.Shares.Split, `SplitRatio`, true);
+    const split = this.extract(data.Shares.Split, `SplitRatio`, true);
 
     // 発行株式数
-    const shares = this.extractDetailData(
-      data.Shares.DilutedShares,
-      `Shares`,
-      true
-    );
+    const shares = this.extract(data.Shares.DilutedShares, `Shares`, true);
     // 発行株式数を補正
     const fixShares = this.fixSplitShares(shares, split, `Shares`);
 
     // dividend per share
-    const dividends = this.extractDetailData(
+    const dividends = this.extract(
       data.Dividends.DividendsPerShare,
       `Dividends`,
       true
@@ -310,20 +352,20 @@ export class CompanyFacts {
   };
 
   /** 階層をシンプルに整理 */
-  extractDetailData = (data, label) => {
+  extract = (data, label) => {
     if (data === undefined || !Object.keys(data).length) return [];
 
     const detail = data.units;
     const units = Object.keys(detail)[0];
     const lists = detail[units];
 
-    const annual = this.extractDetailDataForm10k(lists, label);
+    const annual = this.extractForm10k(lists, label);
 
     return annual;
   };
 
   /** 年次報告を取得 */
-  extractDetailDataForm10k = (data, label) => {
+  extractForm10k = (data, label) => {
     // フィルターを作成
     const frame = new Set(
       data
@@ -345,7 +387,7 @@ export class CompanyFacts {
   };
 
   /** 非年次報告を取得 */
-  extractDetailDataOptional = (data, label) => {
+  extractOptional = (data, label) => {
     // フィルターを作成
     const frame = new Set(data.filter((d) => d.frame).map((d) => d.frame));
 
