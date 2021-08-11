@@ -8,7 +8,7 @@ const handler = async (req, res) => {
   const fetched = await fetch(url, fetcher);
   const json = await fetched.json();
 
-  res.status(200).json(json);
+  return res.status(200).json(json);
 };
 
 export default withSentry(handler);
