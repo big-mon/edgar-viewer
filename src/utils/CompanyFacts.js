@@ -210,9 +210,21 @@ export class CompanyFacts {
     // 営業利益率
     const operatingMargin = this.calOperatingMargin(revenue, operatingIncome);
 
+    // CapEx
+    const capEx = this.extractCapitalExpense();
+    // CF
+    const cashflowOperating = this.extract(data.CashFlow.Operating, "OCF");
+    const cashflowInvesting = this.extract(data.CashFlow.Investing, "ICF");
+    const cashflowFree = this.calcFreeCashFLow(cashflowOperating, capEx);
+    const cashflowOperatingMargin = this.calcOperatingCashFlowMargin(
+      cashflowOperating,
+      revenue
+    );
+
     return {
       /** 企業名 */
       CompanyName: name,
+
       /** 売上高 */
       Revenue: revenue,
       /** 営業利益 */
@@ -221,6 +233,15 @@ export class CompanyFacts {
       OperatingProfitMargin: operatingMargin,
       /** 純利益 */
       NetIncome: income,
+
+      /** 営業CF */
+      OCF: cashflowOperating,
+      /** 営業CFマージン */
+      OCFMargin: cashflowOperatingMargin,
+      /** 投資CF */
+      ICF: cashflowInvesting,
+      /** フリーCF */
+      FCF: cashflowFree,
     };
   };
 
@@ -245,6 +266,22 @@ export class CompanyFacts {
     return sorted;
   };
 
+  /** CapEXの抽出 */
+  extractCapitalExpense = () => {
+    const data = this.baseData.PaymentsToAcquire;
+    const label = `PtA`;
+    const key = `frame`;
+
+    const pay01 = this.extract(data.ProductiveAssets, label);
+    const pay02 = this.extract(data.PropertyPlant, label);
+
+    // マージ及びソート
+    const merged = merge(keyBy(pay01, key), keyBy(pay02, key));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    return sorted;
+  };
+
   /** 営業利益率を算出 */
   calOperatingMargin = (revenue, operatingIncome) => {
     const mergeKey = `frame`;
@@ -257,11 +294,54 @@ export class CompanyFacts {
     );
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
-    // 利益率を算出
+    // 算出
     const result = sorted.map((d) => ({
       frame: d.frame,
       "Operating Profit Margin": Math.round((d[key] / d.Revenue) * 1000) / 10,
     }));
+
+    return result;
+  };
+
+  /** フリーCFを算出 */
+  calcFreeCashFLow = (ocf, capEx) => {
+    const mergeKey = `frame`;
+    const keyOCF = `OCF`;
+    const keyCapEx = `PtA`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(ocf, mergeKey), keyBy(capEx, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        frame: d.frame,
+        FCF: d[keyOCF] - d[keyCapEx],
+      }))
+      .filter((d) => !isNaN(d.FCF));
+
+    return result;
+  };
+
+  /** 営業CFマージンを算出 */
+  calcOperatingCashFlowMargin = (ocf, revenue) => {
+    const mergeKey = `frame`;
+    const keyOCF = `OCF`;
+    const keyRevenue = `Revenue`;
+    const label = `OCF Margin`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(ocf, mergeKey), keyBy(revenue, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        frame: d.frame,
+        [label]: Math.round((d[keyOCF] / d[keyRevenue]) * 1000) / 10,
+      }))
+      .filter((d) => !isNaN(d[label]));
 
     return result;
   };
@@ -284,47 +364,34 @@ export class CompanyFacts {
       keyBy(netIncome, mergeKey)
     );
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
-    console.log(sorted);
 
     return sorted;
   };
 
   /** キャッシュフローデータを生成 */
-  createCashFlowData = (data) => {
-    // 営業CF
-    const opeCF = this.extract(data.CashFlow.Operating, "OCF");
-    // 投資CF
-    const invCF = this.extract(data.CashFlow.Investing, "ICF");
-    // CapEX
-    const pay01 = this.extract(data.PaymentsToAcquire.ProductiveAssets, "PtA");
-    const pay02 = this.extract(data.PaymentsToAcquire.PropertyPlant, "PtA");
-    // 売上
-    const revenue = this.extract(data.Revenue.Revenue, "Revenue");
-    const revenueOld1 = this.extract(data.Revenue.Revenue2016, "Revenue");
-    const revenueOld2 = this.extract(data.Revenue.Revenue2015, "Revenue");
+  loadChartDataCF = () => {
+    const data = this.data;
+    const mergeKey = `frame`;
+
+    const ocf = data.OCF;
+    const ocfMargin = data.OCFMargin;
+    const icf = data.ICF;
+    const fcf = data.FCF;
+    console.log(ocf);
+    console.log(ocfMargin);
+    console.log(icf);
+    console.log(fcf);
 
     // マージ及びソート
     const merged = merge(
-      keyBy(opeCF, "frame"),
-      keyBy(invCF, "frame"),
-      keyBy(pay01, "frame"),
-      keyBy(pay02, "frame"),
-      keyBy(revenue, "frame"),
-      keyBy(revenueOld1, "frame"),
-      keyBy(revenueOld2, "frame")
+      keyBy(ocf, mergeKey),
+      keyBy(ocfMargin, mergeKey),
+      keyBy(icf, mergeKey),
+      keyBy(fcf, mergeKey)
     );
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
-    // フリーCFと営業CFマージンを算出
-    const result = sorted
-      .map((d) => ({ ...d, FCF: d["OCF"] - d["PtA"] }))
-      .filter((d) => !isNaN(d.FCF))
-      .map((d) => ({
-        ...d,
-        "OCF Margin": Math.round((d.OCF / d.Revenue) * 1000) / 10,
-      }));
-
-    return result;
+    return sorted;
   };
 
   /** 1株辺りの業績データを生成 */
@@ -414,7 +481,6 @@ export class CompanyFacts {
       .forEach((timing) => {
         const frame = timing.sort;
         const ratio = timing.SplitRatio;
-        console.log(frame);
 
         edited = edited.map((d) => ({
           frame: d.frame,
