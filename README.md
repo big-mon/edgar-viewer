@@ -2,6 +2,18 @@
 
 Visualize data of Form 10-K, 10-Q.
 
+[![GitHub license](https://img.shields.io/github/license/big-mon/edgar-viewer)](https://github.com/big-mon/edgar-viewer/blob/main/LICENSE)
+
+## 🗿 Introduction
+
+[Alpha Gazer](https://edgar.damonge.com) is a graphical viewer of EDGAR's From 10-K, 10-Q data.
+
+[![](./docs/readme-img.jpg)](https://edgar.damonge.com)
+
+## 🎨 Features
+
+- Chart based visualized data.
+
 ## 🛠 Project Structure
 
 | directory                 | explain                                             |
