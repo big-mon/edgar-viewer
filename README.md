@@ -3,6 +3,7 @@
 Visualize data of Form 10-K, 10-Q.
 
 [![GitHub license](https://img.shields.io/github/license/big-mon/edgar-viewer)](https://github.com/big-mon/edgar-viewer/blob/main/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbig-mon%2Fedgar-viewer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbig-mon%2Fedgar-viewer?ref=badge_shield)
 
 ## 🗿 Introduction
 
