@@ -40,6 +40,7 @@ const colors = {
   opeIncome: "#B83B5E",
   opeIncome2: "#903749",
   netIncome: "#878ECD",
+  dividends: "#70AF85",
 };
 
 /** チャートパターンを生成 */
@@ -94,8 +95,21 @@ const createChartPattern = (type, data) => {
         </ComposedChart>
       );
 
-    case "pershare":
-    // 1株辺りの業績推移
+    case "perShare":
+      // 1株辺りの業績推移
+      return (
+        <BarChart data={chartData} margin={margin}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="frame" />
+          <YAxis tickFormatter={dataFormatter} />
+          <Tooltip formatter={dataFormatter} />
+          <Legend verticalAlign="top" height={40} />
+          <Bar dataKey="DPS" fill={colors.dividends} />
+          <Bar dataKey="EPS" fill={colors.opeIncome} />
+          <Bar dataKey="CFPS" fill={colors.netIncome} />
+          <Bar dataKey="SPS" fill={colors.revenue} />
+        </BarChart>
+      );
 
     default:
       return (
