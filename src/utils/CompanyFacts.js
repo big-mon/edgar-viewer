@@ -39,6 +39,7 @@ export class CompanyFacts {
         RevenueInd:
           gaap.RevenueFromContractWithCustomerIncludingAssessedTax ?? {},
         RevenueInd2015: gaap.SalesRevenueServicesNet ?? {},
+        RevenueInd2014: gaap.SalesRevenueGoodsNet ?? {},
         /** 売上原価 */
         COGS: gaap.CostOfGoodsAndServicesSold ?? {},
         /** 粗利益 */
@@ -287,9 +288,11 @@ export class CompanyFacts {
     const revenueOld2 = this.extract(data.Revenue2015, label); // 2018年非推奨
     const revenueInd = this.extract(data.RevenueInd, label); // 2018年非推奨
     const revenueIndOld1 = this.extract(data.RevenueInd2015, label);
+    const revenueIndOld2 = this.extract(data.RevenueInd2014, label); // 2018年非推奨
 
     // マージ及びソート
     const merged = merge(
+      keyBy(revenueIndOld2, key),
       keyBy(revenueIndOld1, key),
       keyBy(revenueInd, key),
       keyBy(revenueOld2, key),
