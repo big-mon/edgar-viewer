@@ -31,10 +31,14 @@ export class CompanyFacts {
 
       /** 売上高 */
       Revenue: {
-        /** 純売上高(2018-) */
+        /** 純売上高-ハイテク系(2018-) */
         Revenue: gaap.RevenueFromContractWithCustomerExcludingAssessedTax ?? {},
         Revenue2016: gaap.Revenues ?? {},
         Revenue2015: gaap.SalesRevenueNet ?? {},
+        /** 純売上高-資本財系(2018-) */
+        RevenueInd:
+          gaap.RevenueFromContractWithCustomerIncludingAssessedTax ?? {},
+        RevenueInd2015: gaap.SalesRevenueServicesNet ?? {},
         /** 売上原価 */
         COGS: gaap.CostOfGoodsAndServicesSold ?? {},
         /** 粗利益 */
@@ -280,13 +284,17 @@ export class CompanyFacts {
 
     const revenue = this.extract(data.Revenue, label);
     const revenueOld1 = this.extract(data.Revenue2016, label);
-    const revenueOld2 = this.extract(data.Revenue2015, label);
+    const revenueOld2 = this.extract(data.Revenue2015, label); // 2018年非推奨
+    const revenueInd = this.extract(data.RevenueInd, label); // 2018年非推奨
+    const revenueIndOld1 = this.extract(data.RevenueInd2015, label);
 
     // マージ及びソート
     const merged = merge(
-      keyBy(revenue, key),
+      keyBy(revenueIndOld1, key),
+      keyBy(revenueInd, key),
+      keyBy(revenueOld2, key),
       keyBy(revenueOld1, key),
-      keyBy(revenueOld2, key)
+      keyBy(revenue, key)
     );
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
@@ -582,8 +590,9 @@ export class CompanyFacts {
       keyBy(netIncome, mergeKey)
     );
     const sorted = Object.values(merged).sort(
-      (a, b) => a[mergeKey] - b[mergeKey]
+      (a, b) => a[mergeKey].replace(`CY`, "") - b[mergeKey].replace(`CY`, "")
     );
+    console.log(sorted);
 
     return sorted;
   };
@@ -606,7 +615,7 @@ export class CompanyFacts {
       keyBy(fcf, mergeKey)
     );
     const sorted = Object.values(merged).sort(
-      (a, b) => a[mergeKey] - b[mergeKey]
+      (a, b) => a[mergeKey].replace(`CY`, "") - b[mergeKey].replace(`CY`, "")
     );
 
     return sorted;
