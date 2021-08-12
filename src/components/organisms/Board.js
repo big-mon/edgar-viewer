@@ -16,6 +16,7 @@ export class Board extends React.Component {
     const facts = model.baseData;
     const revenues = model.loadChartDataRevenue();
     const cashflow = model.loadChartDataCF();
+    const perShare = model.loadChartDataPerShare();
 
     return (
       <>
@@ -34,6 +35,11 @@ export class Board extends React.Component {
           title="キャッシュフローの推移"
           type={"cashflow"}
           data={cashflow}
+        />
+        <DataGraph
+          title="1株辺り業績の推移"
+          type={"perShare"}
+          data={perShare}
         />
       </>
     );
