@@ -19,6 +19,7 @@ Visualize data of Form 10-K, 10-Q.
 
 | directory                 | explain                                             |
 | ------------------------- | --------------------------------------------------- |
+| docs/                     | ドキュメント用の資材                                |
 | public/                   | 静的な公開ファイル                                  |
 | src/components/           | UI コンポーネント、Atomic Design ベース             |
 | src/components/atoms/     | 最小単位の UI、ボタンやテキストなど                 |
@@ -26,10 +27,32 @@ Visualize data of Form 10-K, 10-Q.
 | src/components/organisms/ | molecules や atoms を組み合わせた部品、ヘッダーなど |
 | src/components/template/  | organisms を組み合わせた部品                        |
 | src/pages/                | ルーティングされるページ                            |
+| src/pages/api/            | API 定義                                            |
 | src/styles/               | CSS, SCSS                                           |
+| src/utils/                | 汎用処理                                            |
+
+## 🔗 Links
+
+- [Production Page](https://edgar.damonge.com/)
+- [My Blog](https://estrilda.damonge.com/) extremely private post. :)
+- [Next.js](https://nextjs.org/) platform.
+
+## 🤝 Contributing
+
+There are many ways to contribute to the Alpha Gazer.
+
+- pull requests
+- reporting issues
+- creating suggestions
+- providing translations
+- fix English texts. -> I am not good at English. HELP ME~~~
 
 ## ❤ Special Thanks
 
 ### Background Picture
 
 - [Guillaume Meurice](https://www.pexels.com/ja-jp/photo/1894350/)
+
+## License
+
+Licensed under the **Apache-2.0 License**
