@@ -16,7 +16,6 @@ export class Board extends React.Component {
     const facts = model.baseData;
     const revenues = model.loadChartDataRevenue();
     const cashflow = model.loadChartDataCF();
-    const perShare = model.createPerSahareData(facts);
 
     return (
       <>

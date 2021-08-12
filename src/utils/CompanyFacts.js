@@ -12,6 +12,7 @@ export class CompanyFacts {
   deconstructOriginalFacts = (data) => {
     if (data === undefined) return {};
 
+    const dei = data.facts?.dei ?? {};
     const gaap = data.facts["us-gaap"] ?? {};
     if (!Object.keys(gaap).length) return {};
 
@@ -21,7 +22,9 @@ export class CompanyFacts {
 
       /** 株式 */
       Shares: {
-        /** 希薄化後の発行株式数(加重平均) */
+        /** 発行済み株式数 */
+        Basic: dei.EntityCommonStockSharesOutstanding ?? {},
+
         DilutedShares:
           gaap.WeightedAverageNumberOfDilutedSharesOutstanding ?? {},
         /** 株式分割比率 */
@@ -173,6 +176,9 @@ export class CompanyFacts {
       CashFlow: {
         /** 営業キャッシュフロー */
         Operating: gaap.NetCashProvidedByUsedInOperatingActivities ?? {},
+        Operating2014:
+          gaap.NetCashProvidedByUsedInOperatingActivitiesContinuingOperations ??
+          {},
         /** 投資キャッシュフロー */
         Investing: gaap.NetCashProvidedByUsedInInvestingActivities ?? {},
         /** 財務キャッシュフロー */
@@ -213,13 +219,17 @@ export class CompanyFacts {
     // CapEx
     const capEx = this.extractCapitalExpense();
     // CF
-    const cashflowOperating = this.extract(data.CashFlow.Operating, "OCF");
+    const cashflowOperating = this.extractOperatingCashFlow();
     const cashflowInvesting = this.extract(data.CashFlow.Investing, "ICF");
     const cashflowFree = this.calcFreeCashFLow(cashflowOperating, capEx);
     const cashflowOperatingMargin = this.calcOperatingCashFlowMargin(
       cashflowOperating,
       revenue
     );
+
+    // 株式分割履歴
+    const stockSplitTiming = this.extractSplittedTiming();
+    const sharesDiluted = this.extractDilutedShares(stockSplitTiming);
 
     return {
       /** 企業名 */
@@ -242,6 +252,9 @@ export class CompanyFacts {
       ICF: cashflowInvesting,
       /** フリーCF */
       FCF: cashflowFree,
+
+      /** 希薄化後の株式数 */
+      Shares: sharesDiluted,
     };
   };
 
@@ -280,6 +293,57 @@ export class CompanyFacts {
     const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
 
     return sorted;
+  };
+
+  /** 営業CFを抽出 */
+  extractOperatingCashFlow = () => {
+    const data = this.baseData.CashFlow;
+    const label = `OCF`;
+    const key = `frame`;
+
+    const ocf = this.extract(data.Operating, label);
+    const ocfOld = this.extract(data.Operating2014, label);
+
+    // マージ及びソート
+    const merged = merge(keyBy(ocf, key), keyBy(ocfOld, key));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    return sorted;
+  };
+
+  /** 株式分割履歴を抽出 */
+  extractSplittedTiming = () => {
+    const data = this.baseData.Shares.Split;
+    const label = `SplitRatio`;
+
+    const result = this.extractAllTime(data, label)
+      .filter((d) => d.frame)
+      .reverse();
+
+    return result;
+  };
+
+  /** 希薄化後の発行株式数を抽出 */
+  extractDilutedShares = (split) => {
+    const beforeDiluted = this.extractAllTime(
+      this.baseData.Shares.DilutedShares,
+      "DilutedShares"
+    );
+
+    const afterDiluted = this.calcLayGroundworkDilutedShares(
+      beforeDiluted,
+      split
+    );
+
+    const paddedDiluted = this.paddedFrame(afterDiluted);
+
+    const fixDiluted = this.fixSplitShares(
+      paddedDiluted,
+      split,
+      "DilutedShares"
+    );
+
+    return fixDiluted;
   };
 
   /** 営業利益率を算出 */
@@ -346,6 +410,54 @@ export class CompanyFacts {
     return result;
   };
 
+  /** 希薄化考慮済みの発行株式数を算出 */
+  calcLayGroundworkDilutedShares = (shares, split) => {
+    const keyFrame = `frame`;
+    const keyStart = `start`;
+    const keyEnd = `end`;
+    const keyFiled = `filed`;
+    const keyDiluted = `DilutedShares`;
+    const keySplit = `SplitRatio`;
+    const keySort = `sort`;
+    let editedShares = shares.slice();
+
+    // 元データで過年度数値が再度件発表された場合、調整後株式数が最新化されている。
+    // 株式分割の比率計算の対象とする時期がずれるため、当初掲載値に戻す。
+    split.forEach((timing) => {
+      const splittedEnd = timing[keyEnd];
+      const splittedRatio = timing[keySplit];
+
+      editedShares.forEach((row) => {
+        if (row[keyEnd] > splittedEnd) return row;
+
+        // 当初掲載値
+        const sameData = shares.find(
+          (s) =>
+            s[keyStart] === row[keyStart] &&
+            s[keyEnd] === row[keyEnd] &&
+            s[keyDiluted] != row[keyDiluted] &&
+            s[keyFiled] < row[keyFiled]
+        );
+        if (sameData === undefined) return row;
+
+        // 最新値に対して分割比率を除算して戻す
+        row[keyDiluted] = Math.round(row[keyDiluted] / splittedRatio);
+        return row;
+      });
+    });
+
+    // 期間情報の含むデータのみに絞り込む
+    const result = editedShares
+      .filter((d) => d[keyFrame])
+      .map((d) => ({
+        [keyFrame]: d[keyFrame],
+        [keySort]: d[keySort],
+        [keyDiluted]: d[keyDiluted],
+      }));
+
+    return result;
+  };
+
   /** 業績データを生成 */
   loadChartDataRevenue = () => {
     const data = this.data;
@@ -390,29 +502,6 @@ export class CompanyFacts {
     return sorted;
   };
 
-  /** 1株辺りの業績データを生成 */
-  createPerSahareData = (data) => {
-    // 株式分割比率
-    const split = this.extract(data.Shares.Split, `SplitRatio`, true);
-
-    // 発行株式数
-    const shares = this.extract(data.Shares.DilutedShares, `Shares`, true);
-    // 発行株式数を補正
-    const fixShares = this.fixSplitShares(shares, split, `Shares`);
-
-    // dividend per share
-    const dividends = this.extract(
-      data.Dividends.DividendsPerShare,
-      `Dividends`,
-      true
-    );
-    const fixDividends = this.fixSplitShares(dividends, split, `Dividends`);
-
-    // EPS
-    // CFPS
-    // SPS
-  };
-
   /** 指定要素を抽出(1株辺りの考慮不要) */
   extract = (data, label) => {
     if (data === undefined || !Object.keys(data).length) return [];
@@ -422,6 +511,19 @@ export class CompanyFacts {
     const lists = detail[units];
 
     const extracted = this.extractForm10k(lists, label);
+
+    return extracted;
+  };
+
+  /** 指定要素を抽出(1株辺りの考慮が必要) */
+  extractAllTime = (data, label) => {
+    if (data === undefined || !Object.keys(data).length) return [];
+
+    const detail = data.units;
+    const units = Object.keys(detail)[0];
+    const lists = detail[units];
+
+    const extracted = this.extractOptional(lists, label);
 
     return extracted;
   };
@@ -450,41 +552,68 @@ export class CompanyFacts {
 
   /** 非年次報告を取得 */
   extractOptional = (data, label) => {
-    // フィルターを作成
-    const frame = new Set(data.filter((d) => d.frame).map((d) => d.frame));
-
     // フィルターを適用
-    const filtered = data
-      .filter((d) => frame.has(d.frame))
-      .map((d) => ({
-        frame: d.frame,
-        original: d.val,
-        sort: d.end,
-        [label]: d.val,
-      }));
+    const filtered = data.map((d) => ({
+      frame: d.frame ?? "",
+      sort: d.frame,
+      [label]: d.val,
+      start: d.start,
+      end: d.end,
+      filed: d.filed,
+    }));
 
     return filtered;
   };
 
   /** 対象データを分割比率で補正 */
   fixSplitShares = (target, split, label) => {
+    const keyFrame = `frame`;
+    const keySort = `fixSort`;
+    const keySplit = `SplitRatio`;
+
     let edited = target;
 
-    split
-      .slice()
-      .reverse()
-      .forEach((timing) => {
-        const frame = timing.sort;
-        const ratio = timing.SplitRatio;
+    split.slice().forEach((timing) => {
+      const frame = timing[keyFrame].slice(0, 8);
+      const ratio = timing[keySplit];
 
-        edited = edited.map((d) => ({
-          frame: d.frame,
-          original: d.original,
-          sort: d.sort,
-          [label]: d.sort <= frame ? d[label] * ratio : d[label],
-        }));
+      edited = edited.map((d) => {
+        return {
+          [keyFrame]: d[keyFrame],
+          [keySort]: d[keySort],
+          original: d[label],
+          [label]: d[keySort] < frame ? d[label] * ratio : d[label],
+        };
       });
+    });
 
     return edited;
+  };
+
+  /** frameをQで埋めた補正キーバリューペアを追加 */
+  paddedFrame = (target) => {
+    const result = target.map((d) => {
+      if (d.frame.length === 8) return { ...d, fixSort: d.frame };
+
+      const quarters = target.filter(
+        (f) => d.frame === f.frame.slice(0, 6) && f.frame.length === 8
+      );
+      if (quarters.length !== 3) return { ...d, fixSort: d.frame };
+
+      // Form 10-Kと重なるQを算出
+      const f10qSeason = new Set(quarters.map((q) => q.frame.slice(-1)));
+      const f10kSeason = !f10qSeason.has("1")
+        ? 1
+        : !f10qSeason.has("2")
+        ? 2
+        : !f10qSeason.has("3")
+        ? 3
+        : 4;
+
+      // キーを追加
+      return { ...d, fixSort: d.frame + "Q" + f10kSeason };
+    });
+
+    return result;
   };
 }
