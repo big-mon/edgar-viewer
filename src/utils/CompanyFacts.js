@@ -22,9 +22,7 @@ export class CompanyFacts {
 
       /** 株式 */
       Shares: {
-        /** 発行済み株式数 */
-        Basic: dei.EntityCommonStockSharesOutstanding ?? {},
-
+        /** 希薄化後株式数 */
         DilutedShares:
           gaap.WeightedAverageNumberOfDilutedSharesOutstanding ?? {},
         /** 株式分割比率 */
@@ -65,14 +63,6 @@ export class CompanyFacts {
           {},
         /** 純利益 */
         Final: gaap.NetIncomeLoss ?? {},
-      },
-
-      /** EPS */
-      EPS: {
-        /** EPS(普通) */
-        basic: gaap.EarningsPerShareBasic ?? {},
-        /** EPS(希薄化) */
-        diluted: gaap.EarningsPerShareDiluted ?? {},
       },
 
       /** 資産 */
@@ -226,10 +216,25 @@ export class CompanyFacts {
       cashflowOperating,
       revenue
     );
+    // 配当CF
+    const cashflowDividends = this.extract(
+      data.CashFlow.Dividends,
+      "Dividends"
+    );
 
     // 株式分割履歴
     const stockSplitTiming = this.extractSplittedTiming();
+    // 希薄化後株式数
     const sharesDiluted = this.extractDilutedShares(stockSplitTiming);
+
+    // DPS
+    const dps = this.calcDps(cashflowDividends, sharesDiluted);
+    // EPS
+    const eps = this.calcEps(income, sharesDiluted);
+    // CFPS
+    const cfps = this.calcCfps(cashflowFree, sharesDiluted);
+    // SPS
+    const sps = this.calcSps(revenue, sharesDiluted);
 
     return {
       /** 企業名 */
@@ -255,6 +260,15 @@ export class CompanyFacts {
 
       /** 希薄化後の株式数 */
       Shares: sharesDiluted,
+
+      /** DPS(希薄化後) */
+      DPS: dps,
+      /** EPS(希薄化後) */
+      EPS: eps,
+      /** CFPS(希薄化後) */
+      CFPS: cfps,
+      /** SPS(希薄化後) */
+      SPS: sps,
     };
   };
 
@@ -341,7 +355,7 @@ export class CompanyFacts {
       paddedDiluted,
       split,
       "DilutedShares"
-    );
+    ).filter((d) => d.frame.length === 6);
 
     return fixDiluted;
   };
@@ -402,7 +416,7 @@ export class CompanyFacts {
     // 算出
     const result = sorted
       .map((d) => ({
-        frame: d.frame,
+        [mergeKey]: d[mergeKey],
         [label]: Math.round((d[keyOCF] / d[keyRevenue]) * 1000) / 10,
       }))
       .filter((d) => !isNaN(d[label]));
@@ -426,16 +440,20 @@ export class CompanyFacts {
     split.forEach((timing) => {
       const splittedEnd = timing[keyEnd];
       const splittedRatio = timing[keySplit];
+      const splitterdFiled = timing[keyFiled];
 
       editedShares.forEach((row) => {
-        if (row[keyEnd] > splittedEnd) return row;
+        const judge =
+          row[keyEnd] > splittedEnd ||
+          row[keyFiled].slice(0, 4) <= splitterdFiled.slice(0, 4) - 2;
+        if (judge) return row;
 
         // 当初掲載値
         const sameData = shares.find(
           (s) =>
             s[keyStart] === row[keyStart] &&
             s[keyEnd] === row[keyEnd] &&
-            s[keyDiluted] != row[keyDiluted] &&
+            s[keyDiluted] !== row[keyDiluted] &&
             s[keyFiled] < row[keyFiled]
         );
         if (sameData === undefined) return row;
@@ -458,6 +476,94 @@ export class CompanyFacts {
     return result;
   };
 
+  /** 希薄化後DPS */
+  calcDps = (dividends, shares) => {
+    const mergeKey = `frame`;
+    const keyShares = `DilutedShares`;
+    const keyDividends = `Dividends`;
+    const label = `DPS`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(dividends, mergeKey), keyBy(shares, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        [mergeKey]: d[mergeKey],
+        [label]: Math.round((d[keyDividends] / d[keyShares]) * 100) / 100,
+      }))
+      .filter((d) => !isNaN(d[label]));
+
+    return result;
+  };
+
+  /** 希薄化後EPS */
+  calcEps = (netIncome, shares) => {
+    const mergeKey = `frame`;
+    const keyShares = `DilutedShares`;
+    const keyEarning = `Net Income`;
+    const label = `EPS`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(netIncome, mergeKey), keyBy(shares, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        [mergeKey]: d[mergeKey],
+        [label]: Math.round((d[keyEarning] / d[keyShares]) * 100) / 100,
+      }))
+      .filter((d) => !isNaN(d[label]));
+
+    return result;
+  };
+
+  /** 希薄化後CFPS */
+  calcCfps = (fcf, shares) => {
+    const mergeKey = `frame`;
+    const keyShares = `DilutedShares`;
+    const keyFcf = `FCF`;
+    const label = `CFPS`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(fcf, mergeKey), keyBy(shares, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        [mergeKey]: d[mergeKey],
+        [label]: Math.round((d[keyFcf] / d[keyShares]) * 100) / 100,
+      }))
+      .filter((d) => !isNaN(d[label]));
+
+    return result;
+  };
+
+  /** 希薄化後SPS */
+  calcSps = (revenue, shares) => {
+    const mergeKey = `frame`;
+    const keyShares = `DilutedShares`;
+    const keyRevenue = `Revenue`;
+    const label = `SPS`;
+
+    // マージ及びソート
+    const merged = merge(keyBy(revenue, mergeKey), keyBy(shares, mergeKey));
+    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+
+    // 算出
+    const result = sorted
+      .map((d) => ({
+        [mergeKey]: d[mergeKey],
+        [label]: Math.round((d[keyRevenue] / d[keyShares]) * 100) / 100,
+      }))
+      .filter((d) => !isNaN(d[label]));
+
+    return result;
+  };
+
   /** 業績データを生成 */
   loadChartDataRevenue = () => {
     const data = this.data;
@@ -475,7 +581,9 @@ export class CompanyFacts {
       keyBy(operatingProfitMargin, mergeKey),
       keyBy(netIncome, mergeKey)
     );
-    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+    const sorted = Object.values(merged).sort(
+      (a, b) => a[mergeKey] - b[mergeKey]
+    );
 
     return sorted;
   };
@@ -497,7 +605,33 @@ export class CompanyFacts {
       keyBy(icf, mergeKey),
       keyBy(fcf, mergeKey)
     );
-    const sorted = Object.values(merged).sort((a, b) => a.sort - b.sort);
+    const sorted = Object.values(merged).sort(
+      (a, b) => a[mergeKey] - b[mergeKey]
+    );
+
+    return sorted;
+  };
+
+  /** 1株辺り業績データを生成 */
+  loadChartDataPerShare = () => {
+    const data = this.data;
+    const mergeKey = `frame`;
+
+    const dps = data.DPS;
+    const eps = data.EPS;
+    const cfps = data.CFPS;
+    const sps = data.SPS;
+
+    // マージ及びソート
+    const merged = merge(
+      keyBy(dps, mergeKey),
+      keyBy(eps, mergeKey),
+      keyBy(cfps, mergeKey),
+      keyBy(sps, mergeKey)
+    );
+    const sorted = Object.values(merged).sort(
+      (a, b) => a[mergeKey].replace(`CY`, "") - b[mergeKey].replace(`CY`, "")
+    );
 
     return sorted;
   };
